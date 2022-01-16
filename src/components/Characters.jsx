@@ -1,9 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useReducer, useRef, useState } from 'react';
+import React, { useCallback, useMemo, useReducer, useRef, useState } from 'react';
+import useCharacters from '../hooks/useCharaters';
 import Search from './Search';
 
 const initialState = {
     favorites: []
 }
+
+const API = 'https://rickandmortyapi.com/api/character/'
 
 const favoriteReducer = (state, action) => {
     switch (action.type) {
@@ -18,39 +21,33 @@ const favoriteReducer = (state, action) => {
 }
 
 const Characters = () => {
-    const [characters, setCharacters] = useState([]);
     const [favorites, dispatch] = useReducer(favoriteReducer, initialState);
-
-    const searchInput = useRef(null)
-
     const [search, setSearch] = useState('');
+    const searchInput = useRef(null);
 
-    useEffect(() => {
-        fetch('https://rickandmortyapi.com/api/character/')
-            .then(response => response.json())
-            .then(data => setCharacters(data.results));
-    }, []);
+    const characters = useCharacters(API);
 
     const handleClick = favorite => {
         dispatch({ type: 'ADD_TO_FAVORITE', payload: favorite })
     }
 
-    /*     const handleSearch = event => {
-            setSearch(searchInput.current.value);
-        } */
+    // const handleSearch = () => {
+    //   setSearch(searchInput.current.value);
+    // }
 
-    const handleSearch = useCallback(event => {
+    const handleSearch = useCallback(() => {
         setSearch(searchInput.current.value);
     }, [])
 
-    /*   const filterUsers = characters.filter(character => {
-          return character.name.toLowerCase().includes(search.toLowerCase());
-      }) */
+    // const filteredUsers = characters.filter((user) => {
+    //   return user.name.toLowerCase().includes(search.toLowerCase());
+    // })
 
-    const filterUsers = useMemo(() =>
-        characters.filter(character => {
-            return character.name.toLowerCase().includes(search.toLowerCase());
-        }), [characters, search]
+    const filteredUsers = useMemo(() =>
+        characters.filter((user) => {
+            return user.name.toLowerCase().includes(search.toLowerCase());
+        }),
+        [characters, search]
     )
 
     return (
@@ -64,7 +61,7 @@ const Characters = () => {
 
             <Search search={search} searchInput={searchInput} handleSearch={handleSearch} />
 
-            {filterUsers.map(character => (
+            {filteredUsers.map(character => (
                 <div className="item" key={character.id}>
                     <h2>{character.name}</h2>
                     <button type="button" onClick={() => handleClick(character)}>Agregar a Favoritos</button>
